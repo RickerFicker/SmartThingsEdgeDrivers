@@ -21,7 +21,7 @@ local utils = require "st.utils"
 
 local BATTERY_CHECKED = "__battery_checked"
 local BOUNDS_CHECKED = "__bounds_checked"
-local TEMP_BOUND_RECEIVED = "temp_bound_received"
+local TEMP_BOUND_RECEIVED = "__temp_bound_received"
 local TEMP_MIN = "__temp_min"
 local TEMP_MAX = "__temp_max"
 
@@ -31,8 +31,8 @@ local function get_field_for_endpoint(device, field, endpoint)
   return device:get_field(string.format("%s_%d", field, endpoint))
 end
 
-local function set_field_for_endpoint(device, field, endpoint, value, persist)
-  device:set_field(string.format("%s_%d", field, endpoint), value, {persist = persist})
+local function set_field_for_endpoint(device, field, endpoint, value, additional_params)
+  device:set_field(string.format("%s_%d", field, endpoint), value, additional_params)
 end
 
 local function supports_battery_percentage_remaining(device)
@@ -88,11 +88,13 @@ local function device_init(driver, device)
 
   if not device:get_field(BOUNDS_CHECKED) then
     local temp_eps = device:get_endpoints(clusters.TemperatureMeasurement.ID)
+    local limit_read = im.InteractionRequest(im.InteractionRequest.RequestType.READ, {})
     if #temp_eps ~= 0 then
-      local temp_limit_read = im.InteractionRequest(im.InteractionRequest.RequestType.READ, {})
-      temp_limit_read:merge(clusters.TemperatureMeasurement.attributes.MinMeasuredValue:read())
-      temp_limit_read:merge(clusters.TemperatureMeasurement.attributes.MaxMeasuredValue:read())
-      device:send(temp_limit_read)
+      limit_read:merge(clusters.TemperatureMeasurement.attributes.MinMeasuredValue:read())
+      limit_read:merge(clusters.TemperatureMeasurement.attributes.MaxMeasuredValue:read())
+    end
+    if #limit_read.info_blocks ~= 0 then
+      device:send(limit_read)
     end
     device:set_field(BOUNDS_CHECKED, true)
   end
@@ -117,20 +119,21 @@ end
 
 local temp_attr_handler_factory = function(minOrMax)
   return function(driver, device, ib, response)
-    if ib.data.value ~= nil then
-      local temp = ib.data.value / 100.0
-      local unit = "C"
-      set_field_for_endpoint(device, TEMP_BOUND_RECEIVED..minOrMax, ib.endpoint_id, temp, false)
-      local min = get_field_for_endpoint(device, TEMP_BOUND_RECEIVED..TEMP_MIN, ib.endpoint_id)
-      local max = get_field_for_endpoint(device, TEMP_BOUND_RECEIVED..TEMP_MAX, ib.endpoint_id)
-      if min ~= nil and max ~= nil then
-        if min < max then
-          device:emit_event_for_endpoint(ib.endpoint_id, capabilities.temperatureMeasurement.temperatureRange({ value = { minimum = min, maximum = max }, unit = unit }))
-          set_field_for_endpoint(device, TEMP_BOUND_RECEIVED..TEMP_MIN, ib.endpoint_id, nil, false)
-          set_field_for_endpoint(device, TEMP_BOUND_RECEIVED..TEMP_MAX, ib.endpoint_id, nil, false)
-        else
-          device.log.warn_with({hub_logs = true}, string.format("Device reported a min temperature %d that is not lower than the reported max temperature %d", min, max))
-        end
+    if ib.data.value == nil then
+      return
+    end
+    local temp = ib.data.value / 100.0
+    local unit = "C"
+    set_field_for_endpoint(device, TEMP_BOUND_RECEIVED..minOrMax, ib.endpoint_id, temp)
+    local min = get_field_for_endpoint(device, TEMP_BOUND_RECEIVED..TEMP_MIN, ib.endpoint_id)
+    local max = get_field_for_endpoint(device, TEMP_BOUND_RECEIVED..TEMP_MAX, ib.endpoint_id)
+    if min ~= nil and max ~= nil then
+      if min < max then
+        device:emit_event_for_endpoint(ib.endpoint_id, capabilities.temperatureMeasurement.temperatureRange({ value = { minimum = min, maximum = max }, unit = unit }))
+        set_field_for_endpoint(device, TEMP_BOUND_RECEIVED..TEMP_MIN, ib.endpoint_id, nil)
+        set_field_for_endpoint(device, TEMP_BOUND_RECEIVED..TEMP_MAX, ib.endpoint_id, nil)
+      else
+        device.log.warn_with({hub_logs = true}, string.format("Device reported a min temperature %d that is not lower than the reported max temperature %d", min, max))
       end
     end
   end
