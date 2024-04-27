@@ -1,4 +1,4 @@
-local log = require "log"
+local log = require "logjam"
 local socket = require "cosock".socket
 local st_utils = require "st.utils"
 
@@ -7,6 +7,7 @@ local HueDeviceTypes = require "hue_device_types"
 ---@class DiscoveredContactSensorHandler: DiscoveredChildDeviceHandler
 local M = {}
 
+-- TODO This should be generalizable to all "sensors", including buttons.
 ---@param driver HueDriver
 ---@param api_instance PhilipsHueApi
 ---@param device_service_info HueDeviceInfo
@@ -54,6 +55,12 @@ local function _do_update(driver, api_instance, device_service_info, bridge_netw
     contact_sensor_description.tamper_id = tamper.data[1].id
     contact_sensor_description.tamper_reports = tamper.data[1].tamper_reports
   end
+
+  contact_sensor_description.sensor_list = {
+    id = HueDeviceTypes.CONTACT,
+    power_id = HueDeviceTypes.DEVICE_POWER,
+    tamper_id = HueDeviceTypes.TAMPER
+  }
 
   if type(cache) == "table" then
     cache[resource_id] = contact_sensor_description

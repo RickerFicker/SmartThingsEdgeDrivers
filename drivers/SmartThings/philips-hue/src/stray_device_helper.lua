@@ -1,5 +1,5 @@
 local cosock = require "cosock"
-local log = require "log"
+local log = require "logjam"
 local st_utils = require "st.utils"
 
 local Discovery = require "disco"
@@ -103,114 +103,112 @@ function StrayDeviceHelper.spawn()
           found_bridges[msg_device.id] = msg.device
           local bridge_device_uuid = msg_device.id
 
-          -- TODO: We can optimize around this by keeping track of whether or not this bridge
-          -- needs to be scanned (maybe skip scanning if there are no stray devices?)
-          --
-          -- @doug.stephen@smartthings.com
-          log.info(
-            string.format(
-              "Stray devices handler notified of new bridge %s, scanning bridge",
-              (msg.device.label or msg.device.device_network_id or msg.device.id or "unknown bridge")
+          if next(stray_devices) ~= nil then
+            log.info(
+              string.format(
+                "Stray devices handler notified of new bridge %s, scanning bridge",
+                (msg.device.label or msg.device.device_network_id or msg.device.id or "unknown bridge")
+              )
             )
-          )
-          Discovery.search_bridge_for_supported_devices(thread_local_driver, msg_device:get_field(Fields.BRIDGE_ID),
-            api_instance,
-            function(hue_driver, svc_info, device_data)
-              if not (svc_info.rid and svc_info.rtype and svc_info.rtype == "light") then return end
+            Discovery.search_bridge_for_supported_devices(thread_local_driver, msg_device:get_field(Fields.BRIDGE_ID),
+              api_instance,
+              function(hue_driver, svc_info, device_data)
+                if not (svc_info.rid and svc_info.rtype and svc_info.rtype == "light") then return end
 
-              local device_light_resource_id = svc_info.rid
-              local light_resource, rest_err, _ = api_instance:get_light_by_id(device_light_resource_id)
-              if rest_err ~= nil or not light_resource then
-                log.error_with({ hub_logs = true }, string.format(
-                  "Error getting light info while processing new bridge %s",
-                  (msg_device.label or msg_device.id or "unknown device"), rest_err
-                ))
-                return
-              end
-
-              if light_resource.errors and #light_resource.errors > 0 then
-                log.error_with({ hub_logs = true }, "Errors found in API response:")
-                for idx, resource_err in ipairs(light_resource.errors) do
+                local device_light_resource_id = svc_info.rid
+                local light_resource, rest_err, _ = api_instance:get_light_by_id(device_light_resource_id)
+                if rest_err ~= nil or not light_resource then
                   log.error_with({ hub_logs = true }, string.format(
-                    "Error Number %s in get_light_by_id response while onboarding bridge %s: %s",
-                    idx,
-                    (msg_device.label or msg_device.id or "unknown device"),
-                    st_utils.stringify_table(resource_err)
+                    "Error getting light info while processing new bridge %s",
+                    (msg_device.label or msg_device.id or "unknown device"), rest_err
                   ))
+                  return
                 end
-                return
-              end
 
-              if light_resource.data and #light_resource.data > 0 then
-                for _, light in ipairs(light_resource.data) do
-                  ---@type HueLightInfo
-                  local light_resource_description = {
-                    hue_provided_name = device_data.metadata.name,
-                    id = light.id,
-                    on = light.on,
-                    color = light.color,
-                    dimming = light.dimming,
-                    color_temperature = light.color_temperature,
-                    mode = light.mode,
-                    parent_device_id = bridge_device_uuid,
-                    hue_device_id = light.owner.rid,
-                    hue_device_data = device_data
-                  }
-                  if not Discovery.device_state_disco_cache[light.id] then
-                    log.info(string.format("Caching previously unknown service description for %s",
-                      device_data.metadata.name))
-                    Discovery.device_state_disco_cache[light.id] = light_resource_description
-                    if device_data.id_v1 then
-                      Discovery.device_state_disco_cache[device_data.id_v1] = light_resource_description
+                if light_resource.errors and #light_resource.errors > 0 then
+                  log.error_with({ hub_logs = true }, "Errors found in API response:")
+                  for idx, resource_err in ipairs(light_resource.errors) do
+                    log.error_with({ hub_logs = true }, string.format(
+                      "Error Number %s in get_light_by_id response while onboarding bridge %s: %s",
+                      idx,
+                      (msg_device.label or msg_device.id or "unknown device"),
+                      st_utils.stringify_table(resource_err)
+                    ))
+                  end
+                  return
+                end
+
+                if light_resource.data and #light_resource.data > 0 then
+                  for _, light in ipairs(light_resource.data) do
+                    ---@type HueLightInfo
+                    local light_resource_description = {
+                      hue_provided_name = device_data.metadata.name,
+                      id = light.id,
+                      on = light.on,
+                      color = light.color,
+                      dimming = light.dimming,
+                      color_temperature = light.color_temperature,
+                      mode = light.mode,
+                      parent_device_id = bridge_device_uuid,
+                      hue_device_id = light.owner.rid,
+                      hue_device_data = device_data
+                    }
+                    if not Discovery.device_state_disco_cache[light.id] then
+                      log.info(string.format("Caching previously unknown service description for %s",
+                        device_data.metadata.name))
+                      Discovery.device_state_disco_cache[light.id] = light_resource_description
+                      if device_data.id_v1 then
+                        Discovery.device_state_disco_cache[device_data.id_v1] = light_resource_description
+                      end
                     end
                   end
                 end
-              end
 
-              for _, stray_device in pairs(stray_devices) do
-                local matching_v1_id = stray_device.data and stray_device.data.bulbId and
-                    stray_device.data.bulbId == device_data.id_v1:gsub("/lights/", "")
-                local matching_uuid = utils.get_hue_rid(stray_device) == svc_info.rid or
-                    stray_device.device_network_id == svc_info.rid
+                for _, stray_device in pairs(stray_devices) do
+                  local matching_v1_id = stray_device.data and stray_device.data.bulbId and
+                      stray_device.data.bulbId == device_data.id_v1:gsub("/lights/", "")
+                  local matching_uuid = utils.get_hue_rid(stray_device) == svc_info.rid or
+                      stray_device.device_network_id == svc_info.rid
 
-                if matching_v1_id or matching_uuid then
-                  stray_device:set_field(Fields.RESOURCE_ID, svc_info.rid, { persist = true })
-                  local api_key_extracted = api_instance.headers["hue-application-key"]
-                  log.info_with({ hub_logs = true }, " ", (stray_device.label or stray_device.id or "unknown device"),
-                    ", re-adding")
-                  log.info_with({ hub_logs = true }, string.format(
-                    'Found Bridge for stray device %s, retrying onboarding flow.\n' ..
-                    '\tMatching v1 id? %s\n' ..
-                    '\tMatching uuid? %s\n' ..
-                    '\tdevice DNI: %s\n' ..
-                    '\tdevice Parent Assigned Key: %s\n' ..
-                    '\tdevice parent device id: %s\n' ..
-                    '\tProvided bridge_device_id: %s\n' ..
-                    '\tAPI key cached for given bridge_device_id? %s\n' ..
-                    '\tCached bridge device for given API key: %s\n'
-                    ,
-                    stray_device.label,
-                    matching_v1_id,
-                    matching_uuid,
-                    stray_device.device_network_id,
-                    stray_device.parent_assigned_child_key,
-                    stray_device.parent_device_id,
-                    bridge_device_uuid,
-                    (Discovery.api_keys[hue_driver:get_device_info(bridge_device_uuid).device_network_id] ~= nil),
-                    hue_driver.api_key_to_bridge_id[api_key_extracted]
-                  ))
-                  break
+                  if matching_v1_id or matching_uuid then
+                    stray_device:set_field(Fields.RESOURCE_ID, svc_info.rid, { persist = true })
+                    local api_key_extracted = api_instance.headers["hue-application-key"]
+                    log.info_with({ hub_logs = true }, " ", (stray_device.label or stray_device.id or "unknown device"),
+                      ", re-adding")
+                    log.info_with({ hub_logs = true }, string.format(
+                      'Found Bridge for stray device %s, retrying onboarding flow.\n' ..
+                      '\tMatching v1 id? %s\n' ..
+                      '\tMatching uuid? %s\n' ..
+                      '\tdevice DNI: %s\n' ..
+                      '\tdevice Parent Assigned Key: %s\n' ..
+                      '\tdevice parent device id: %s\n' ..
+                      '\tProvided bridge_device_id: %s\n' ..
+                      '\tAPI key cached for given bridge_device_id? %s\n' ..
+                      '\tCached bridge device for given API key: %s\n'
+                      ,
+                      stray_device.label,
+                      matching_v1_id,
+                      matching_uuid,
+                      stray_device.device_network_id,
+                      stray_device.parent_assigned_child_key,
+                      stray_device.parent_device_id,
+                      bridge_device_uuid,
+                      (Discovery.api_keys[hue_driver:get_device_info(bridge_device_uuid).device_network_id] ~= nil),
+                      hue_driver.api_key_to_bridge_id[api_key_extracted]
+                    ))
+                    break
+                  end
                 end
-              end
-            end,
-            "[process_strays]"
-          )
-          log.info(string.format(
-            "Finished querying bridge %s for devices from stray devices handler",
-            (msg.device.label or msg.device.device_network_id or msg.device.id or "unknown bridge")
-          )
-          )
-          StrayDeviceHelper.process_strays(thread_local_driver, stray_devices, msg_device.id)
+              end,
+              "[process_strays]"
+            )
+            log.info(string.format(
+              "Finished querying bridge %s for devices from stray devices handler",
+              (msg.device.label or msg.device.device_network_id or msg.device.id or "unknown bridge")
+            )
+            )
+            StrayDeviceHelper.process_strays(thread_local_driver, stray_devices, msg_device.id)
+          end
         elseif msg.type == StrayDeviceHelper.MessageTypes.NewStrayDevice then
           stray_devices[msg_device.device_network_id] = msg_device
 

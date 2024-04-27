@@ -7,6 +7,7 @@ local HueDeviceTypes = require "hue_device_types"
 ---@class DiscoveredButtonHandler: DiscoveredChildDeviceHandler
 local M = {}
 
+-- TODO This should be generalizable to all "sensors", including buttons.
 ---@param driver HueDriver
 ---@param api_instance PhilipsHueApi
 ---@param device_service_info HueDeviceInfo
@@ -34,7 +35,8 @@ local function _do_update(driver, api_instance, device_service_info, bridge_netw
     parent_device_id = bridge_device.id,
     hue_device_id = device_service_info.id,
     hue_device_data = device_service_info,
-    num_buttons = num_buttons
+    num_buttons = num_buttons,
+    sensor_list = { power_id = HueDeviceTypes.DEVICE_POWER }
   }
 
   for _, button_rid in ipairs(button_services) do
@@ -51,6 +53,8 @@ local function _do_update(driver, api_instance, device_service_info, bridge_netw
       if control_id == 1 then
         button_remote_description.id = button_repr.data[1].id
       end
+
+      button_remote_description.sensor_list[button_id_key] = HueDeviceTypes.BUTTON
     end
   end
 

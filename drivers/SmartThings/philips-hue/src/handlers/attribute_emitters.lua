@@ -1,5 +1,5 @@
 local capabilities = require "st.capabilities"
-local log = require "log"
+local log = require "logjam"
 local st_utils = require "st.utils"
 -- trick to fix the VS Code Lua Language Server typechecking
 ---@type fun(val: table, name: string?, multi_line: boolean?): string
@@ -282,5 +282,6 @@ device_type_emitter_map[HueDeviceTypes.BUTTON] = AttributeEmitters.emit_button_a
 device_type_emitter_map[HueDeviceTypes.CONTACT] = AttributeEmitters.emit_contact_sensor_attribute_events
 device_type_emitter_map[HueDeviceTypes.LIGHT] = AttributeEmitters.emit_light_attribute_events
 device_type_emitter_map[HueDeviceTypes.MOTION] = AttributeEmitters.emit_motion_sensor_attribute_events
+device_type_emitter_map[HueDeviceTypes.CONTACT] = AttributeEmitters.emit_contact_sensor_attribute_events
 
 return AttributeEmitters

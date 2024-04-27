@@ -1,5 +1,5 @@
 local cosock = require "cosock"
-local log = require "log"
+local log = require "logjam"
 local json = require "st.json"
 local st_utils = require "st.utils"
 
@@ -13,6 +13,7 @@ local attribute_emitters = require "handlers.attribute_emitters"
 local command_handlers = require "handlers.commands"
 local lifecycle_handlers = require "handlers.lifecycle_handlers"
 
+local hue_multi_service_device_utils = require "utils.hue_multi_service_device_utils"
 local lunchbox_util = require "lunchbox.util"
 local utils = require "utils"
 
@@ -331,10 +332,18 @@ function hue_bridge_utils.do_bridge_network_init(driver, bridge_device, bridge_u
   bridge_device:set_field(Fields._INIT, true, { persist = false })
   local ids_to_remove = {}
   for id, device in ipairs(driver._devices_pending_refresh) do
-    local bridge_id = device.parent_device_id or bridge_device:get_field(Fields.PARENT_DEVICE_ID)
+    local parent_bridge = utils.get_hue_bridge_for_device(driver, device)
+    local bridge_id = parent_bridge and parent_bridge.id
     if bridge_id == bridge_device.id then
       table.insert(ids_to_remove, id)
-      command_handlers.refresh_handler(driver, device)
+      local refresh_info = command_handlers.refresh_handler(driver, device)
+      if refresh_info and device:get_field(Fields.IS_MULTI_SERVICE) then
+        local hue_device_type = utils.determine_device_type(device)
+        local hue_device_id = device:get_field(Fields.HUE_DEVICE_ID)
+        hue_multi_service_device_utils.update_multi_service_device_maps(
+          driver, device, hue_device_id, refresh_info, hue_device_type
+        )
+      end
     end
   end
   for _, id in ipairs(ids_to_remove) do

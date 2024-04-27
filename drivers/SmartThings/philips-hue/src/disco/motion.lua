@@ -1,4 +1,4 @@
-local log = require "log"
+local log = require "logjam"
 local socket = require "cosock".socket
 local st_utils = require "st.utils"
 
@@ -7,6 +7,7 @@ local HueDeviceTypes = require "hue_device_types"
 ---@class DiscoveredMotionSensorHandler: DiscoveredChildDeviceHandler
 local M = {}
 
+-- TODO This should be generalizable to all "sensors", including buttons.
 ---@param driver HueDriver
 ---@param api_instance PhilipsHueApi
 ---@param device_service_info HueDeviceInfo
@@ -64,6 +65,13 @@ local function _do_update(driver, api_instance, device_service_info, bridge_netw
     motion_sensor_description.light = illuminance.data[1].light
     motion_sensor_description.light_level_enabled = illuminance.data[1].enabled
   end
+
+  motion_sensor_description.sensor_list = {
+    id = HueDeviceTypes.MOTION,
+    power_id = HueDeviceTypes.DEVICE_POWER,
+    temperature_id = HueDeviceTypes.TEMPERATURE,
+    light_level_id = HueDeviceTypes.LIGHT_LEVEL
+  }
 
   if type(cache) == "table" then
     cache[resource_id] = motion_sensor_description

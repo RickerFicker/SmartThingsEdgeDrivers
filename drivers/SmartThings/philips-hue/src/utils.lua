@@ -1,4 +1,4 @@
-local log = require "log"
+local log = require "logjam"
 
 local Fields = require "fields"
 local HueDeviceTypes = require "hue_device_types"
@@ -51,10 +51,6 @@ function utils.safe_wrap_handler(handler)
   end
 end
 
-function utils.kelvin_to_mirek(kelvin) return 1000000 / kelvin end
-
-function utils.mirek_to_kelvin(mirek) return 1000000 / mirek end
-
 -- TODO: The Hue API itself doesn't have events for multipresses, however, it will
 -- emit batched "short release" eventsource on the SSE stream if they're close together.
 -- Right now the SSE stream handling is a relatively dumb pass-through that doesn't inspect
@@ -71,6 +67,10 @@ function utils.get_supported_button_values(event_values)
 
   return values
 end
+
+function utils.kelvin_to_mirek(kelvin) return 1000000 / kelvin end
+
+function utils.mirek_to_kelvin(mirek) return 1000000 / mirek end
 
 function utils.str_starts_with(str, start)
   return str:sub(1, #start) == start
