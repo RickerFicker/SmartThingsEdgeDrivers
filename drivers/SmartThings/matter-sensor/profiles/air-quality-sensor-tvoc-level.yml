@@ -1,4 +1,4 @@
-name: air-quality-ikea
+name: air-quality-sensor-tvoc-level.yml
 components:
   - id: main
     capabilities:

@@ -117,11 +117,6 @@ matterGeneric:
     deviceTypes:
       - id: 0x002C
     deviceProfileName: air-quality-sensor
-  - id: "matter/air-quality-ikea"
-    deviceLabel: IKEA air Quality Sensor
-    deviceTypes:
-      - id: 0x002C # Air Quality
-    deviceProfileName: air-quality-ikea
   - id: "matter/air-quality-tuo"
     deviceLabel: Tuo Air Quality
     deviceTypes:

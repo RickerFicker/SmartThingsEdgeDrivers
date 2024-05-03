@@ -46,41 +46,71 @@ local subscribed_attributes = {
     clusters.CarbonMonoxideConcentrationMeasurement.attributes.MeasuredValue,
     clusters.CarbonMonoxideConcentrationMeasurement.attributes.MeasurementUnit,
   },
+  [capabilities.carbonMonoxideHealthConcern.ID] = {
+    clusters.CarbonMonoxideConcentrationMeasurement.attributes.LevelValue,
+  },
   [capabilities.carbonDioxideMeasurement.ID] = {
     clusters.CarbonDioxideConcentrationMeasurement.attributes.MeasuredValue,
     clusters.CarbonDioxideConcentrationMeasurement.attributes.MeasurementUnit,
+  },
+  [capabilities.carbonDioxideHealthConcern.ID] = {
+    clusters.CarbonDioxideConcentrationMeasurement.attributes.LevelValue,
   },
   [capabilities.nitrogenDioxideMeasurement.ID] = {
     clusters.NitrogenDioxideConcentrationMeasurement.attributes.MeasuredValue,
     clusters.NitrogenDioxideConcentrationMeasurement.attributes.MeasurementUnit
   },
+  [capabilities.nitrogenDioxideHealthConcern.ID] = {
+    clusters.NitrogenDioxideConcentrationMeasurement.attributes.LevelValue,
+  },
   [capabilities.ozoneMeasurement.ID] = {
     clusters.OzoneConcentrationMeasurement.attributes.MeasuredValue,
     clusters.OzoneConcentrationMeasurement.attributes.MeasurementUnit
+  },
+  [capabilities.ozoneHealthConcern.ID] = {
+    clusters.OzoneConcentrationMeasurement.attributes.LevelValue,
   },
   [capabilities.formaldehydeMeasurement.ID] = {
     clusters.FormaldehydeConcentrationMeasurement.attributes.MeasuredValue,
     clusters.FormaldehydeConcentrationMeasurement.attributes.MeasurementUnit,
   },
+  [capabilities.formaldehydeHealthConcern.ID] = {
+    clusters.FormaldehydeConcentrationMeasurement.attributes.LevelValue,
+  },
   [capabilities.veryFineDustSensor.ID] = {
     clusters.Pm1ConcentrationMeasurement.attributes.MeasuredValue,
     clusters.Pm1ConcentrationMeasurement.attributes.MeasurementUnit,
+  },
+  [capabilities.veryFineDustHealthConcern.ID] = {
+    clusters.Pm1ConcentrationMeasurement.attributes.LevelValue,
   },
   [capabilities.fineDustSensor.ID] = {
     clusters.Pm25ConcentrationMeasurement.attributes.MeasuredValue,
     clusters.Pm25ConcentrationMeasurement.attributes.MeasurementUnit,
   },
+  [capabilities.fineDustHealthConcern.ID] = {
+    clusters.Pm25ConcentrationMeasurement.attributes.LevelValue,
+  },
   [capabilities.dustSensor.ID] = {
     clusters.Pm10ConcentrationMeasurement.attributes.MeasuredValue,
     clusters.Pm10ConcentrationMeasurement.attributes.MeasurementUnit,
+  },
+  [capabilities.dustHealthConcern.ID] = {
+    clusters.Pm10ConcentrationMeasurement.attributes.LevelValue,
   },
   [capabilities.radonMeasurement.ID] = {
     clusters.RadonConcentrationMeasurement.attributes.MeasuredValue,
     clusters.RadonConcentrationMeasurement.attributes.MeasurementUnit,
   },
+  [capabilities.radonHealthConcern.ID] = {
+    clusters.RadonConcentrationMeasurement.attributes.LevelValue,
+  },
   [capabilities.tvocMeasurement.ID] = {
     clusters.TotalVolatileOrganicCompoundsConcentrationMeasurement.attributes.MeasuredValue,
     clusters.TotalVolatileOrganicCompoundsConcentrationMeasurement.attributes.MeasurementUnit,
+  },
+  [capabilities.tvocHealthConcern.ID] = {
+    clusters.TotalVolatileOrganicCompoundsConcentrationMeasurement.attributes.LevelValue
   }
 }
 
@@ -127,9 +157,14 @@ local function configure(driver, device)
   local pm10_eps = device:get_endpoints(clusters.Pm10ConcentrationMeasurement.ID)
   local radon_eps = device:get_endpoints(clusters.RadonConcentrationMeasurement.ID)
   local tvoc_eps = device:get_endpoints(clusters.TotalVolatileOrganicCompoundsConcentrationMeasurement.ID)
+  local tvoc_eps_level = device:get_endpoints(clusters.TotalVolatileOrganicCompoundsConcentrationMeasurement.ID, {feature_bitmap = clusters.TotalVolatileOrganicCompoundsConcentrationMeasurement.types.Feature.LEVEL_INDICATION})
 
   -- check to see if device can switch to a profile with less capabilities to support
-  if #CO_eps > 0 or #NO2_eps > 0 or #ozone_eps > 0 or #formaldehyde_eps > 0 or #pm1_eps > 0 or
+  if #CO_eps > 0 and #CO2_eps > 0 and #NO2_eps > 0 and #ozone_eps > 0 and #formaldehyde_eps > 0 and #pm1_eps > 0 and
+     #pm2_5_eps > 0 and #pm10_eps > 0 and #radon_eps > 0 and #tvoc_eps_level > 0 then
+      -- device supports clusters that are only currently in the 'air-quality-sensor-tvoc-level' profile
+      device:try_update_metadata({profile = "air-quality-sensor-tvoc-level"})
+  elseif #CO_eps > 0 or #NO2_eps > 0 or #ozone_eps > 0 or #formaldehyde_eps > 0 or #pm1_eps > 0 or
      #pm10_eps > 0 or #radon_eps > 0 then
       -- device supports a cluster that is only currently in the 'air-quality-sensor' profile
       device:try_update_metadata({profile = "air-quality-sensor"})
