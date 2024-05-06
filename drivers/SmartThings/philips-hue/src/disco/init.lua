@@ -216,7 +216,7 @@ end
 ---@param driver HueDriver
 ---@param bridge_network_id string
 ---@param api_instance PhilipsHueApi
----@param callback fun(driver: HueDriver, bridge_network_id: string, svc_info: HueServiceInfo, device_data: table)
+---@param callback fun(driver: HueDriver, bridge_network_id: string, primary_services: table<HueDeviceTypes,HueServiceInfo[]>, device_data: table)
 ---@param log_prefix string?
 ---@param do_delete boolean?
 function HueDiscovery.search_bridge_for_supported_devices(driver, bridge_network_id, api_instance, callback, log_prefix, do_delete)
@@ -264,10 +264,11 @@ end
 ---@param driver HueDriver
 ---@param bridge_network_id string
 ---@param device_data HueDeviceInfo
----@param callback fun(driver: HueDriver, bridge_network_id: string, svc_info: HueServiceInfo, device_data: table)?
+---@param callback fun(driver: HueDriver, bridge_network_id: string, primary_services: table<HueDeviceTypes,HueServiceInfo[]>, device_data: table, bridge_device: HueBridgeDevice?)?
 ---@param log_prefix string?
+---@param bridge_device HueBridgeDevice?
 ---@return boolean device_joined_to_bridge true if device was sent through the join process
-function HueDiscovery.process_device_service(driver, bridge_network_id, device_data, callback, log_prefix)
+function HueDiscovery.process_device_service(driver, bridge_network_id, device_data, callback, log_prefix, bridge_device)
   local prefix = ""
   if type(log_prefix) == "string" and #log_prefix > 0 then prefix = log_prefix .. " " end
   local primary_device_services = {}
@@ -296,7 +297,7 @@ function HueDiscovery.process_device_service(driver, bridge_network_id, device_d
           st_utils.stringify_table(primary_device_services), device_data.id, device_data.id_v1, device_data.metadata.name
         )
       )
-      callback(driver, bridge_network_id, primary_device_services, device_data)
+      callback(driver, bridge_network_id, primary_device_services, device_data, bridge_device)
     else
       log.warn(
         prefix .. "Argument passed in `callback` position for "

@@ -29,6 +29,7 @@ local Fields = {
   MODEL_ID = "modelid",
   PARENT_DEVICE_ID = "parent_device_id_local",
   RESOURCE_ID = "rid",
+  RETRY_MIGRATION = "retry_migration",
   WRAPPED_HUE = "_wrapped_hue"
 }
 

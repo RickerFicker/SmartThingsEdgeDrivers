@@ -219,7 +219,8 @@ function hue_bridge_utils.do_bridge_network_init(driver, bridge_device, bridge_u
                     bridge_device.device_network_id,
                     add_data,
                     Discovery.handle_discovered_child_device,
-                    "New Device Event"
+                    "New Device Event",
+                    bridge_device
                   )
                 end, "New Device Event Task")
               end

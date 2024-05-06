@@ -151,8 +151,14 @@ function LifecycleHandlers.initialize_device(driver, device, event, _args, ...)
     driver.datastore.dni_to_device_id[device.device_network_id] = device.id
   end
 
+  if device:get_field(Fields.RETRY_MIGRATION) then
+    LifecycleHandlers.migrate_device(driver, device, ...)
+    return
+  end
+
   log.info(
     string.format("_initialize handling event %s for device %s", event, (device.label or device.id or "unknown device")))
+
   if not device:get_field(Fields._ADDED) then
     log.debug(
       string.format(

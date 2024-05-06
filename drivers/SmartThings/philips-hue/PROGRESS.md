@@ -27,7 +27,7 @@ Tracking TODOs for this refactor in this file; this is mostly to allow for creat
 - [x] Extract lifecycle handlers to their own module(s)
   - [x] 2024-04-18 Update: Initial code review missed that `is_*_bridge` and `is_*_light` calls in `utils` were implemented such that the check for light was based on failing the check for bridge. So those need to be fixed as well.
 - [x] Extract attribute event emitters to their own module(s)
-- [ ] Refactor Stray Light Handler to be a general Stray Device Handler
+- [x] Refactor Stray Light Handler to be a general Stray Device Handler
 - [x] Refactor SSE `onmessage` callback to remove light-specific assumptions
   - [x] `update` messages are hard coded to emit light events with no checks
   - [x] `add` message handling rejects non-light devices instead of being written to be extensible
@@ -37,6 +37,6 @@ Tracking TODOs for this refactor in this file; this is mostly to allow for creat
 #### Tasks
 
 - [ ] Refactor fresh handlers to be a single generic refresh handler, which is only possible once all of the above is complete.
-- [ ] Update all doc strings that claim we only support bridges and lights
-- [ ] Update any dangling utility methods/variables/symbols that use "light" when they should use "device"
+- [x] Update all doc strings that claim we only support bridges and lights
+- [x] Update any dangling utility methods/variables/symbols that use "light" when they should use "device"
 - [ ] Normalize modules to all use `<dir>/init.lua` instead of `<mod>.lua` as a sibling to `<dir>`.
