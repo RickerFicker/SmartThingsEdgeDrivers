@@ -191,18 +191,18 @@ function AttributeEmitters.emit_contact_sensor_attribute_events(sensor_device, s
 
   if sensor_info.tamper_reports then
     log.debug(true, "emit tamper")
-    local num_reports = #sensor_info.tamper_reports
-    local not_tampered = 0
+    local tampered = false
     for _, tamper in ipairs(sensor_info.tamper_reports) do
-      if tamper.state == "not_tampered" then
-        not_tampered = not_tampered + 1
+      if tamper.state == "tampered" then
+        tampered = true
+        break
       end
     end
 
-    if not_tampered == num_reports then
-      sensor_device:emit_event(capabilities.tamperAlert.tamper.clear())
-    else
+    if tampered then
       sensor_device:emit_event(capabilities.tamperAlert.tamper.detected())
+    else
+      sensor_device:emit_event(capabilities.tamperAlert.tamper.clear())
     end
   end
 
