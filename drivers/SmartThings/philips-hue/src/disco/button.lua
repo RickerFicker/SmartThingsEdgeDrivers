@@ -16,6 +16,7 @@ local M = {}
 ---@return table<string,any>? description nil on error
 ---@return string? err nil on success
 local function _do_update(driver, api_instance, device_service_info, bridge_network_id, cache)
+  log.debug("------------ _do_update")
   local rid_by_rtype = {}
   local button_services = {}
   local num_buttons = 0
@@ -91,7 +92,6 @@ function M.update_state_for_all_device_services(driver, api_instance, device_ser
     return
   end
 
-  log.debug("------------ _do_update")
   return _do_update(driver, api_instance, device_service_info.data[1], bridge_network_id, cache)
 end
 
