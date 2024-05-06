@@ -317,8 +317,6 @@ function PhilipsHueApi:get_devices() return self:get_all_reprs_for_rtype("device
 ---@return string? err nil on success
 function PhilipsHueApi:get_connectivity_status() return self:get_all_reprs_for_rtype("zigbee_connectivity") end
 
-function PhilipsHueApi:get_rooms() return self:get_all_reprs_for_rtype("room") end
-
 ---@param light_resource_id string
 ---@return HueResourceResponse<HueLightInfo>?
 ---@return string? err nil on success
@@ -387,11 +385,6 @@ end
 ---@return string? err nil on success
 function PhilipsHueApi:get_light_level_by_id(light_level_resource_id)
   return self:get_rtype_by_rid("light_level", light_level_resource_id)
-end
-
-
-function PhilipsHueApi:get_room_by_id(id)
-  return self:get_rtype_by_rid("room", id)
 end
 
 ---@param id string
