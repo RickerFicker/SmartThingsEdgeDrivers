@@ -148,6 +148,7 @@ function AttributeEmitters.emit_button_attribute_events(button_device, button_in
         (button_device and button_device.lable) or "unknown button"
       )
     )
+    return
   end
 
   local idx = button_idx_map[button_info.id] or 1
