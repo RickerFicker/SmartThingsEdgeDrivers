@@ -4,7 +4,7 @@ local st_utils = require "st.utils"
 
 local Consts = require "consts"
 local Fields = require "fields"
-local HueColorUtils = require "hue.cie_utils"
+local HueColorUtils = require "utils.cie_utils"
 
 local utils = require "utils"
 

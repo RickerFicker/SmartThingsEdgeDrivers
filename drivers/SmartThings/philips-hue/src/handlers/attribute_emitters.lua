@@ -7,7 +7,7 @@ st_utils.stringify_table = st_utils.stringify_table
 
 local Consts = require "consts"
 local Fields = require "fields"
-local HueColorUtils = require "hue.cie_utils"
+local HueColorUtils = require "utils.cie_utils"
 local HueDeviceTypes = require "hue_device_types"
 
 local utils = require "utils"
