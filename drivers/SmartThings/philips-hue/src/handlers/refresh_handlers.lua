@@ -85,7 +85,7 @@ function RefreshHandlers.do_refresh_all_for_bridge(driver, bridge_device)
       local child_devices = bridge_device:get_child_list()
 
       if not bridge_device:get_field(Fields._INIT) then
-        log.warn("Bridge for lights not yet initialized, can't refresh yet.")
+        log.warn("Bridge for devices not yet initialized, can't refresh yet.")
         return
       end
 
@@ -164,12 +164,12 @@ function RefreshHandlers.do_refresh_button(driver, button_device, _, skip_zigbee
   local bridge_device = utils.get_hue_bridge_for_device(driver, button_device, bridge_id)
 
   if not bridge_device then
-    log.warn("Couldn't get Hue bridge for light " .. (button_device.label or button_device.id or "unknown device"))
+    log.warn("Couldn't get Hue bridge for button device " .. (button_device.label or button_device.id or "unknown device"))
     return
   end
 
   if not bridge_device:get_field(Fields._INIT) then
-    log.warn("Bridge for light not yet initialized, can't refresh yet.")
+    log.warn("Bridge for button device not yet initialized, can't refresh yet.")
     driver._devices_pending_refresh[button_device.id] = button_device
     return
   end
@@ -200,12 +200,12 @@ function RefreshHandlers.do_refresh_motion_sensor(driver, sensor_device, _, skip
   local bridge_device = utils.get_hue_bridge_for_device(driver, sensor_device, bridge_id)
 
   if not bridge_device then
-    log.warn("Couldn't get Hue bridge for light " .. (sensor_device.label or sensor_device.id or "unknown device"))
+    log.warn("Couldn't get Hue bridge for motion_sensor " .. (sensor_device.label or sensor_device.id or "unknown device"))
     return
   end
 
   if not bridge_device:get_field(Fields._INIT) then
-    log.warn("Bridge for light not yet initialized, can't refresh yet.")
+    log.warn("Bridge for motion_sensor not yet initialized, can't refresh yet.")
     driver._devices_pending_refresh[sensor_device.id] = sensor_device
     return
   end
@@ -235,12 +235,12 @@ function RefreshHandlers.do_refresh_contact_sensor(driver, sensor_device, _, ski
   local bridge_device = utils.get_hue_bridge_for_device(driver, sensor_device, bridge_id)
 
   if not bridge_device then
-    log.warn("Couldn't get Hue bridge for light " .. (sensor_device.label or sensor_device.id or "unknown device"))
+    log.warn("Couldn't get Hue bridge for contact sensor " .. (sensor_device.label or sensor_device.id or "unknown device"))
     return
   end
 
   if not bridge_device:get_field(Fields._INIT) then
-    log.warn("Bridge for light not yet initialized, can't refresh yet.")
+    log.warn("Bridge for contact sensor not yet initialized, can't refresh yet.")
     driver._devices_pending_refresh[sensor_device.id] = sensor_device
     return
   end

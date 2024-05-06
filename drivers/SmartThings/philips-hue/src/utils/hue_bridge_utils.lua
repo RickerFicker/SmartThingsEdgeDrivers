@@ -164,8 +164,8 @@ function hue_bridge_utils.do_bridge_network_init(driver, bridge_device, bridge_u
                   end
                 end
               else
-                --- for a regular message from a light doing something normal,
-                --- you get the resource id of the light service for that device in
+                --- for a regular message from a device doing something normal,
+                --- you get the resource id of the device service for that device in
                 --- the data field
                 table.insert(resource_ids, update_data.id)
               end
@@ -192,7 +192,7 @@ function hue_bridge_utils.do_bridge_network_init(driver, bridge_device, bridge_u
                 if child_device ~= nil and child_device.id ~= nil then
                   log.info(
                     string.format(
-                      "Light device \"%s\" was deleted from hue bridge %s",
+                      "Device \"%s\" was deleted from hue bridge %s",
                       (child_device.label or child_device.id or "unknown device"),
                       (bridge_device.label or bridge_device.device_network_id or bridge_device.id or "unknown bridge")
                     )

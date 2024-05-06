@@ -300,19 +300,6 @@ function utils.is_edge_bridge(device)
       not (device.data and device.data.username)
 end
 
---- Only checked during `added` callback, or as a later
---- fallback check in the chain of booleans used in `is_bridge`.
----
----@see utils.is_bridge
----@param device HueDevice
----@return boolean
-function utils.is_edge_light(device)
-  return
-      device.parent_assigned_child_key ~= nil and
-      not utils.is_valid_mac_addr_string(device.device_network_id) and
-      not (device.data and device.data.username and device.data.bulbId)
-end
-
 --- Only checked during `added` callback
 ---@param device HueDevice
 ---@return boolean
