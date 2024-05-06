@@ -8,29 +8,29 @@ Tracking TODOs for this refactor in this file; this is mostly to allow for creat
 
 #### Tasks
 
-- [x] Convert supported resources map to a map of handlers instead of boolean ✅ 2024-04-16
-- [x] Move handlers to their own file ✅ 2024-04-16
-- [x] Rename the "light_state_disco_cache" key to be service type agnostic ✅ 2024-04-16
-- [x] Update the `discovered_device_callback` function to allow for other device types ✅ 2024-04-16
+- [x] Convert supported resources map to a map of handlers instead of boolean
+- [x] Move handlers to their own file
+- [x] Rename the "light_state_disco_cache" key to be service type agnostic
+- [x] Update the `discovered_device_callback` function to allow for other device types
 
 ### Capability Handlers
 
 #### Tasks
 
-- [x] Create a table of handlers for dispatching refreshes by device type ✅ 2024-04-17
-- [x] Fix `refresh_all_for_bridge` to remove assumptions that all child devices are lights ✅ 2024-04-17
+- [x] Create a table of handlers for dispatching refreshes by device type
+- [x] Fix `refresh_all_for_bridge` to remove assumptions that all child devices are lights
 
 ### Driver (init.lua) Refactors
 
 #### Tasks
 
-- [x] Extract lifecycle handlers to their own module(s) ✅ 2024-04-22
-  - [x] 2024-04-18 Update: Initial code review missed that `is_*_bridge` and `is_*_light` calls in `utils` were implemented such that the check for light was based on failing the check for bridge. So those need to be fixed as well.  ✅ 2024-04-22
-- [x] Extract attribute event emitters to their own module(s) ✅ 2024-04-17
+- [x] Extract lifecycle handlers to their own module(s)
+  - [x] 2024-04-18 Update: Initial code review missed that `is_*_bridge` and `is_*_light` calls in `utils` were implemented such that the check for light was based on failing the check for bridge. So those need to be fixed as well.
+- [x] Extract attribute event emitters to their own module(s)
 - [ ] Refactor Stray Light Handler to be a general Stray Device Handler
-- [ ] Refactor SSE `onmessage` callback to remove light-specific assumptions
-  - [ ] `update` messages are hard coded to emit light events with no checks
-  - [ ] `add` message handling rejects non-light devices instead of being written to be extensible
+- [x] Refactor SSE `onmessage` callback to remove light-specific assumptions
+  - [x] `update` messages are hard coded to emit light events with no checks
+  - [x] `add` message handling rejects non-light devices instead of being written to be extensible
 
 ### Miscellaneous/Custodial
 
