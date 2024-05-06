@@ -126,7 +126,7 @@ function M.handle_discovered_device(
       return
     end
 
-    local button_profile_ref = ""
+    local button_profile_ref
     -- For Philips Hue Smart Button or single switch In-Wall Switch module which contains only 1 button
     if button_description.num_buttons == 1 then
       button_profile_ref = "single-button"
@@ -136,6 +136,15 @@ function M.handle_discovered_device(
     -- For Philips Hue Dimmer Remote and Tap Dial, which contains 4 buttons
     elseif button_description.num_buttons == 4 then
       button_profile_ref = "4-button-remote"
+    else
+      log.error(
+        string.format(
+          "Do not currently have a profile for device %s with %s buttons, skipping device create",
+          device_service_info.metadata.name,
+          button_description.num_buttons
+        )
+      )
+      return
     end
 
     local bridge_device = driver:get_device_by_dni(bridge_network_id) or {}
